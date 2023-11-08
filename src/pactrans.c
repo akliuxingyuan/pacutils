@@ -838,6 +838,9 @@ int main(int argc, char **argv) {
     goto cleanup;
   }
 
+  while (optind < argc) {
+    *list = alpm_list_add(*list, strdup(argv[optind++]));
+  }
   if (have_stdin) {
     char *buf = NULL;
     size_t len = 0;
