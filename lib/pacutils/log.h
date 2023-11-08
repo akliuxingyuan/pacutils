@@ -93,4 +93,4 @@ void pu_log_action_free(pu_log_action_t *action);
 
 #endif
 
-/* vim: set ts=2 sw=2 noet: */
+/* vim: set ts=2 sw=2 et: */

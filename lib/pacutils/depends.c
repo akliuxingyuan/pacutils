@@ -162,4 +162,4 @@ alpm_pkg_t *pu_dblist_find_dep_satisfier(alpm_list_t *dbs, alpm_depend_t *dep) {
   return NULL;
 }
 
-/* vim: set ts=2 sw=2 noet: */
+/* vim: set ts=2 sw=2 et: */

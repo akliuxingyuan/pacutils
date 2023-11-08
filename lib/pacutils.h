@@ -54,4 +54,4 @@ int pu_log_command(alpm_handle_t *handle, const char *caller, int argc,
 
 #endif /* PACUTILS_H */
 
-/* vim: set ts=2 sw=2 noet: */
+/* vim: set ts=2 sw=2 et: */

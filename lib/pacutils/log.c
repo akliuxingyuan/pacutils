@@ -286,4 +286,4 @@ void pu_log_entry_free(pu_log_entry_t *entry) {
   free(entry);
 }
 
-/* vim: set ts=2 sw=2 noet: */
+/* vim: set ts=2 sw=2 et: */

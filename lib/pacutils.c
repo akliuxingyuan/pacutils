@@ -198,4 +198,4 @@ int pu_log_command(alpm_handle_t *handle, const char *caller, int argc,
   return 0;
 }
 
-/* vim: set ts=2 sw=2 noet: */
+/* vim: set ts=2 sw=2 et: */
