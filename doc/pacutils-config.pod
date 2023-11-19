@@ -1,0 +1,32 @@
+=head1 NAME pacutils-config
+
+=head1 SYNOPSIS
+
+=head1 DESCRIPTION
+
+=head2 pacman.conf
+
+=head2 Command-Line
+
+    char *config_file = pu_config_default_file();
+    pu_config_t *config = NULL;
+    char *sysroot = NULL;
+
+    if ((config = pu_config_new()) == NULL) {
+      perror("malloc");
+      return NULL;
+    }
+    opterr = 0; // silence automatic unknown option error messages
+    while ((c = getopt_long(argc, argv, short_opts, long_opts, NULL)) != -1) {
+        switch (c) {
+            case '?':
+                if (pu_ui_config_parse_argv(argc, argv, config) == -1)
+                    { return -1; }
+                break;
+
+            // handle custom options
+        }
+    }
+    if (!pu_ui_config_load_sysroot(config, config_file, sysroot)) {
+      return -1;
+    }

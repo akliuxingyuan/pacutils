@@ -35,7 +35,7 @@
 
 int pu_iscspace(int c) {
   return c == ' ' || c == '\f' || c == '\n'
-    || c == '\r' || c == '\t' || c == '\v';
+      || c == '\r' || c == '\t' || c == '\v';
 }
 
 char *pu_basename(char *path) {
@@ -215,6 +215,38 @@ FILE *pu_fopenat(int dirfd, const char *path, const char *mode) {
   if ((fd = openat(dirfd, path, flags | rwflag, 0666)) < 0) { return NULL; }
   if ((stream = fdopen(fd, mode)) == NULL) { close(fd); return NULL; }
   return stream;
+}
+
+int pu_read_list_from_stream(FILE *f, const char sep, alpm_list_t **dest) {
+  char *buf = NULL;
+  size_t len = 0;
+  ssize_t read;
+  while ((read = getdelim(&buf, &len, sep, f)) != -1) {
+    if (buf[read - 1] == sep) { buf[read - 1] = '\0'; }
+    if (alpm_list_append_strdup(dest, buf) == NULL) {
+      return -1;
+    }
+  }
+  free(buf);
+  return feof(f) ? 0 : -1;
+}
+
+int _pu_read_list_internal(FILE *f, const char sep, alpm_list_t **dest) {
+  if (f) {
+    int ret = pu_read_list_from_stream(f, sep, dest);
+    fclose(f);
+    return ret;
+  } else {
+    return -1;
+  }
+}
+
+int pu_read_list_from_fd(int fd, const char sep, alpm_list_t **dest) {
+  return _pu_read_list_internal(fdopen(fd, "r"), sep, dest);
+}
+
+int pu_read_list_from_path(const char *path, const char sep, alpm_list_t **dest) {
+  return _pu_read_list_internal(fopen(path, "r"), sep, dest);
 }
 
 /* vim: set ts=2 sw=2 et: */

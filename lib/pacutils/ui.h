@@ -76,6 +76,9 @@ pu_config_t *pu_ui_config_parse_sysroot(pu_config_t *dest, const char *file,
 pu_config_t *pu_ui_config_load_sysroot(pu_config_t *dest, const char *file,
     const char *root);
 
+int pu_ui_read_list_from_fd_string(const char *fdstr, const char sep, alpm_list_t **dest);
+int pu_ui_read_list_from_file(const char *file, const char sep, alpm_list_t **dest);
+
 #endif /* PACUTILS_UI_H */
 
 /* vim: set ts=2 sw=2 et: */

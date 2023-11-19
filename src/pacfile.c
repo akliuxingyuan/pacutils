@@ -159,7 +159,6 @@ mode_t cmp_mode(struct archive_entry *entry, struct stat *st) {
   mode_t perm = pmode & mask;
   const char *type = mode_str(pmode);
 
-
   printf("mode:   %o", perm);
   if (st && perm != (st->st_mode & mask)) {
     printf(" (%o on filesystem)", st->st_mode & mask);

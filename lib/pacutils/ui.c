@@ -22,6 +22,7 @@
 
 #include <errno.h>
 #include <fcntl.h>
+#include <limits.h>
 #include <string.h>
 #include <sys/time.h>
 
@@ -650,6 +651,41 @@ pu_config_t *pu_ui_config_load_sysroot(pu_config_t *dest,
 
 pu_config_t *pu_ui_config_load(pu_config_t *dest, const char *file) {
   return pu_ui_config_load_sysroot(dest, file, "/");
+}
+
+int _pu_ui_parse_fd(const char *fdstr) {
+  int max = INT_MAX / 10;
+  int result = 0;
+  for(const char *c = fdstr; *c; c++) {
+    if(*c < '0' || *c > '9') { errno = EINVAL; return -1; }
+    if(result >= max) { errno = ERANGE; return -1; }
+    result *= 10;
+    result += *c - '0';
+  }
+  return result;
+}
+
+int pu_ui_read_list_from_fd_string(const char *fdstr, const char sep, alpm_list_t **dest) {
+  int fd = _pu_ui_parse_fd(fdstr);
+  if(fd == -1) {
+    pu_ui_error("invalid file descriptor '%s' (%s)", fdstr, strerror(errno));
+    return -1;
+  }
+  if(pu_read_list_from_fd(fd, sep, dest) == -1) {
+    pu_ui_error("error reading list from file descriptor '%d' (%s)",
+        fd, strerror(errno));
+    return -1;
+  }
+  return 0;
+}
+
+int pu_ui_read_list_from_file(const char *file, const char sep, alpm_list_t **dest) {
+  if(pu_read_list_from_path(file, sep, dest) == -1) {
+    pu_ui_error("error reading list from file '%s' (%s)",
+        file, strerror(errno));
+    return -1;
+  }
+  return 0;
 }
 
 /* vim: set ts=2 sw=2 et: */

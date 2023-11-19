@@ -39,7 +39,7 @@ pu_config_t *config = NULL;
 alpm_handle_t *handle = NULL;
 alpm_loglevel_t log_level = ALPM_LOG_ERROR | ALPM_LOG_WARNING;
 
-int srch_cache = 0, srch_local = 0, srch_sync = 0;
+int srch_list = 0, srch_cache = 0, srch_local = 0, srch_sync = 0;
 int invert = 0, re = 0, exact = 0, any = 0, exists = 0;
 int osep = '\n', isep = '\n';
 const char *dbext = NULL, *sysroot = NULL;
@@ -96,6 +96,8 @@ enum longopt_flags {
   FLAG_REPO,
   FLAG_SATISFIES,
   FLAG_URL,
+  FLAG_READ_FD,
+  FLAG_READ_FILE,
 };
 
 enum cmp {
@@ -290,7 +292,7 @@ struct size_cmp *parse_size(const char *str) {
   }
 
   if (bytes > 0) {
-    while (pu_iscspace((unsigned char)*end)) { end++; }
+    while (pu_iscspace((unsigned char) * end)) { end++; }
     if (*end && !parse_size_units(&size.bytes, bytes, end)) {
       fprintf(stderr, "error: invalid size comparison '%s'\n", str);
       cleanup(1);

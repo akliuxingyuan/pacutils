@@ -80,6 +80,8 @@ enum longopt_flags {
   FLAG_NOTIMEOUT,
   FLAG_NULL,
   FLAG_PRINT,
+  FLAG_READ_FD,
+  FLAG_READ_FILE,
   FLAG_RECURSIVE,
   FLAG_REMOVE,
   FLAG_RESOLVE_CONFLICTS,
@@ -164,6 +166,7 @@ void usage(int ret) {
   hputs("   --null=[sep]       parse stdin as <sep> separated values (default NUL)");
   hputs("   --root=<path>      set an alternate installation root");
   hputs("   --sysroot=<path>   set an alternate system root");
+  hputs("   --read-fd=<fd>     read arguments from <fd>");
   hputs("   --help             display this help information");
   hputs("   --version          display version information");
   hputs("");
@@ -285,6 +288,8 @@ pu_config_t *parse_opts(int argc, char **argv) {
     { "sysroot", required_argument, NULL, FLAG_SYSROOT      },
     { "sysupgrade", no_argument, NULL, FLAG_SYSUPGRADE   },
     { "downgrade", no_argument, NULL, FLAG_DOWNGRADE    },
+    { "read-fd", required_argument, NULL, FLAG_READ_FD },
+    { "read-file", required_argument, NULL, FLAG_READ_FILE },
 
     { "help", no_argument, NULL, FLAG_HELP         },
     { "version", no_argument, NULL, FLAG_VERSION      },
@@ -329,7 +334,11 @@ pu_config_t *parse_opts(int argc, char **argv) {
 
       case 1:
         /* non-option arguments */
-        *list = alpm_list_add(*list, strdup(optarg));
+        if (strcmp(optarg, "-") == 0) {
+          pu_read_list_from_stream(stdin, isep, list);
+        } else {
+          *list = alpm_list_add(*list, strdup(optarg));
+        }
         break;
 
       case FLAG_HELP:
@@ -426,6 +435,12 @@ pu_config_t *parse_opts(int argc, char **argv) {
       case FLAG_SYSUPGRADE:
         sysupgrade = 1;
         break;
+      case FLAG_READ_FD:
+        pu_ui_read_list_from_fd_string(optarg, isep, list);
+        break;
+      case FLAG_READ_FILE:
+        pu_ui_read_list_from_file(optarg, isep, list);
+        break;
 
       /* sysupgrade options */
       case FLAG_DOWNGRADE:
@@ -505,7 +520,7 @@ pu_config_t *parse_opts(int argc, char **argv) {
       case FLAG_YOLO:
         resolve_conflict = resolve_replacement = RESOLVE_CONFLICT_ALL;
         install_ignored = remove_corrupted = default_provider
-                = skip_unresolvable = import_keys = RESOLVE_QUESTION_YES;
+        = skip_unresolvable = import_keys = RESOLVE_QUESTION_YES;
         noconfirm = 1;
         break;
 
@@ -825,7 +840,6 @@ void cb_question(void *ctx, alpm_question_t *question) {
 int main(int argc, char **argv) {
   alpm_list_t *i, *err_data = NULL;
   int ret = 0;
-  int have_stdin = !isatty(fileno(stdin)) && errno != EBADF;
 
   myname = pu_basename(argv[0]);
   if (strcasecmp(myname, "pacinstall") == 0) {
@@ -840,16 +854,6 @@ int main(int argc, char **argv) {
 
   while (optind < argc) {
     *list = alpm_list_add(*list, strdup(argv[optind++]));
-  }
-  if (have_stdin) {
-    char *buf = NULL;
-    size_t len = 0;
-    ssize_t read;
-    while ((read = getdelim(&buf, &len, isep, stdin)) != -1) {
-      if (buf[read - 1] == isep) { buf[read - 1] = '\0'; }
-      spec = alpm_list_add(spec, strdup(buf));
-    }
-    free(buf);
   }
 
   if (!spec && !add && !rem && !files && !sysupgrade) {
@@ -883,7 +887,7 @@ int main(int argc, char **argv) {
 
   for (i = assume_installed; i; i = i->next) {
     alpm_depend_t *d = alpm_dep_from_string(i->data);
-    if(!d) {
+    if (!d) {
       pu_ui_error("unable to parse dependency string '%s'", i->data);
       ret = 1;
       goto cleanup;

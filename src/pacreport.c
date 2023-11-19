@@ -116,7 +116,6 @@ off_t get_pkg_chain_size(alpm_handle_t *handle, alpm_pkg_t *pkg) {
   off_t size = 0;
   alpm_list_t *d;
 
-
   for (d = depchain; d; d = d->next) {
     alpm_pkg_t *p = d->data;
     alpm_list_t *dep, *deps = alpm_list_copy(alpm_pkg_get_depends(p));
@@ -362,7 +361,7 @@ void print_missing_files(alpm_handle_t *handle) {
     for (i = 0; i < files->count; ++i) {
       strncpy(tail, files->files[i].name, max);
       if (lstat(path, &sbuf) != 0) {
-        if(errno == ENOENT) {
+        if (errno == ENOENT) {
           struct pkg_file_t *mf = pkg_file_new(p->data, &files->files[i]);
           matches = alpm_list_add(matches, mf);
         } else {

@@ -38,7 +38,7 @@ enum format {
 
 pu_config_t *config = NULL;
 alpm_handle_t *handle = NULL;
-alpm_list_t *allpkgs = NULL;
+alpm_list_t *pkgs = NULL, *allpkgs = NULL;
 
 int format = FORMAT_LONG, verbosity = 1, removable_size = 0, raw = 0;
 int isep = '\n';
@@ -216,7 +216,6 @@ void usage(int ret) {
   exit(ret);
 }
 
-
 pu_config_t *parse_opts(int argc, char **argv) {
   char *config_file = PACMANCONF;
   pu_config_t *config = NULL;
@@ -255,6 +254,13 @@ pu_config_t *parse_opts(int argc, char **argv) {
 
       case 0:
         /* already handled */
+        break;
+      case 1:
+        if(strcmp(optarg, "-") == 0) {
+          pu_ui_read_list_from_stream(stdin, &pkgs);
+        } else {
+          alpm_list_append_strdup(&pkgs, optarg);
+        }
         break;
 
       case FLAG_CONFIG:
@@ -503,19 +509,11 @@ int main(int argc, char **argv) {
             alpm_list_copy(alpm_db_get_pkgcache(i->data)));
   }
 
-  for (argv += optind; *argv; ++argv) {
+  for (alpm_list_t *i = pkgs; i; i = i->next) {
     if (print_pkgspec_info(*argv) != 0) { ret = 1; }
   }
-
-  if (have_stdin) {
-    char *buf = NULL;
-    size_t len = 0;
-    ssize_t read;
-    while ((read = getdelim(&buf, &len, isep, stdin)) != -1) {
-      if (buf[read - 1] == isep) { buf[read - 1] = '\0'; }
-      if (print_pkgspec_info(buf) != 0) { ret = 1; }
-    }
-    free(buf);
+  for (argv += optind; *argv; ++argv) {
+    if (print_pkgspec_info(*argv) != 0) { ret = 1; }
   }
 
 cleanup:

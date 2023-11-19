@@ -45,6 +45,12 @@ int pu_prepend_dir_list(const char *dir, alpm_list_t *paths);
 
 FILE *pu_fopenat(int dirfd, const char *path, const char *mode);
 
+int pu_read_list_from_stream(FILE *f, const char sep, alpm_list_t **dest);
+int pu_read_list_from_fd(int fd, const char sep, alpm_list_t **dest);
+int pu_read_list_from_path(const char *path, const char sep, alpm_list_t **dest);
+
+/* vim: set ts=2 sw=2 et: */
+
 #endif /* PACUTILS_UTIL_H */
 
 /* vim: set ts=2 sw=2 et: */
